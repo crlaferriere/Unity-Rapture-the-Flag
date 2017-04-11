@@ -6,6 +6,7 @@ public class PlayerScript : MonoBehaviour
 {
     /* Manages all aspects of each character. */
     // Player settings
+    #region PlayerScript Variables
     public int playerId; // The Rewired player id of this character
     public float moveSpeed, slowMoveSpeed;
     private Player player; // The Rewired Player
@@ -60,8 +61,11 @@ public class PlayerScript : MonoBehaviour
     // Animations
     private Animator animator;
     // Sets all references and assigns characters
+    #endregion
+
     void Awake()
     {
+        #region Initialized Variables
         if (this.gameObject.name == "Urial(Clone)")
             this.gameObject.name = "Urial";
         else if (this.gameObject.name == "Barachial(Clone)")
@@ -90,6 +94,7 @@ public class PlayerScript : MonoBehaviour
         canCapture = true; 
         invincAnim = invincibleShield.GetComponent<Animator>();
         animator = GetComponent<Animator>();
+        #endregion
     }
 
     void Update()
@@ -122,7 +127,7 @@ public class PlayerScript : MonoBehaviour
         {
             animator.SetBool("Idle", false);
             animator.SetBool("Stunned", true);
-            //animator.SetBool("Meleeing", false); 
+            
             //make ths stun icon appear
             if (stunIconShow)
             {
@@ -151,16 +156,13 @@ public class PlayerScript : MonoBehaviour
         // Meleeing ability for the player
         if (meleeing)
         {
+            //if meleeing move the player in a charge and release their trail
             GetComponent<Rigidbody2D>().velocity = -transform.up * moveSpeed * 3.5f;
             TrailPlay();
-            //animator.SetBool("Meleeing", true);
-            //animator.SetBool("Idle", false);
         }
         else
         {
-            TrailStop();
-            //animator.SetBool("Meleeing", false);
-            //animator.SetBool("Idle", true);
+            TrailStop();          
         }
         // Shield power up...makes it very strong
         if (shieldPowerUp)
@@ -172,14 +174,14 @@ public class PlayerScript : MonoBehaviour
         if (this.gameObject.CompareTag("Angel"))
         {
             if (GameObject.FindGameObjectWithTag("SpeedPowerUp") != null && GameObject.FindGameObjectWithTag("SpeedPowerUp").GetComponent<shotsPowerUp>().angelSpeedPowerUp)
-            {
+            { //if the player is not stunned or dead but has the powerup move twice as fast
                 if (!stunned && !dead)
                 {
                    moveSpeed = 20;
                    slowMoveSpeed = 10;
                    SpeedTrail.Play();  
                 }
-            }
+            }//if the player isnt stunned or dead but has no powerup move normally
             else if (GameObject.FindGameObjectWithTag("SpeedPowerUp") == null && PlayerPrefs.GetInt("moveSpeedModifier") == 0)
             {
                 if (!stunned && !dead)
@@ -188,17 +190,16 @@ public class PlayerScript : MonoBehaviour
                     slowMoveSpeed = 5;
                     SpeedTrail.Stop(); 
                 }
-            }
+            } //this mode is for the modifier so the game isnt too crazy if played on powerups always on
             if (GameObject.FindGameObjectWithTag("SpeedPowerUp") == null && PlayerPrefs.GetInt("moveSpeedModifier") == 1)
             {
                 if (!stunned && !dead)
                 {
                     moveSpeed = 15;
                     slowMoveSpeed = 8;
-                    //SpeedTrail.Play();
                 }
             }
-
+        // indicator for if the player has the shot power up
           if (GameObject.FindGameObjectWithTag("ShotPowerUp") != null && GameObject.FindGameObjectWithTag("ShotPowerUp").GetComponent<shotsPowerUp>().angelShotPowerUp)
             {
                 shotPowerTrail.Play();
@@ -235,7 +236,6 @@ public class PlayerScript : MonoBehaviour
                 {
                     moveSpeed = 15;
                     slowMoveSpeed = 8; 
-                    //SpeedTrail.Play();
                 }
             }
 
@@ -316,7 +316,7 @@ public class PlayerScript : MonoBehaviour
                 else
                     Invoke("CanShootAgain", reloadSpeed);
             }
-            //shot indicator cooldown
+            //shot indicator cooldown for all characters
             if (this.gameObject.name == "Urial")
             {
                 GameObject.Find("Urial Shot Indicator").GetComponent<ShotCooldownIndicator>().UrialShotCooldown();
@@ -357,6 +357,7 @@ public class PlayerScript : MonoBehaviour
                 Invoke("CanMeleeDelay", 0.5f);
             }
 
+            //same as above but for the demon
             if (this.gameObject.CompareTag("Demon"))
             {
                 canThrowFlag = false;
@@ -423,7 +424,7 @@ public class PlayerScript : MonoBehaviour
         // How you interact with flags will differ depending on your player type.
         if (this.gameObject.CompareTag("Angel"))
         {
-            // if an angel hits a demon flag, pick it up if its not being thrown, youre not meleeing, and its not being returned
+            // if an angel hits a demon flag, pick it up if its not being thrown, you're not meleeing, and its not being returned
             if (other.gameObject.CompareTag("Demon Flag"))
             {
                 if (!other.gameObject.GetComponent<FlagScript>().beingThrown && !meleeing && !other.gameObject.GetComponent<FlagScript>().beingReturned)
@@ -510,6 +511,7 @@ public class PlayerScript : MonoBehaviour
         {
             if (hasFlag && canCapture)
             {
+                #region TriggerStay Variable Changes
                 canFire = true;
                 canMelee = true;
                 Invoke("ResetFires", 0.5f);
@@ -526,6 +528,7 @@ public class PlayerScript : MonoBehaviour
                 Invoke("StopShake", 1f);
                 GameObject score = (Instantiate(scoreParticles[1], new Vector3(DemonBase.transform.position.x, DemonBase.transform.position.y), mainCamera.transform.rotation)) as GameObject;
                 Destroy(score, 2f);
+                #endregion
             }
         }
 
@@ -534,6 +537,7 @@ public class PlayerScript : MonoBehaviour
         {
             if (hasFlag && canCapture)
             {
+                #region TriggerStay Variable Changes
                 canFire = true;
                 canMelee = true;
                 Invoke("ResetFires", 0.5f);
@@ -550,12 +554,13 @@ public class PlayerScript : MonoBehaviour
                 Invoke("StopShake", 1f);
                 GameObject score = (Instantiate(scoreParticles[0], new Vector3(AngelBase.transform.position.x, AngelBase.transform.position.y), mainCamera.transform.rotation)) as GameObject;
                 Destroy(score, 2f);
+                #endregion
             }
         }
     }
 
 
-    void OnCollisionEnter2D(Collision2D other) {
+    void OnCollisionEnter2D(Collision2D other) { //used for then the flag is no longer OnTrigger aka when it is thrown to bounce off walls
 
            if (this.gameObject.CompareTag("Angel")) {
             
@@ -630,6 +635,8 @@ public class PlayerScript : MonoBehaviour
         }
     }
 
+    /** functions used to invoke various aspects of our game **/
+
     // Reloading function
     private void CanShootAgain()
     {
@@ -663,6 +670,7 @@ public class PlayerScript : MonoBehaviour
         // if youre not invincible then die and do all this stuff
         if (!invincible)
         {
+            #region Death Variable Changes/data kept track
             hasFlag = false;
             if (this.gameObject.name == "Urial")
                 GameObject.Find("DeathTracker").GetComponent<DeathTrackerScript>().urialAlive = false;
@@ -810,11 +818,13 @@ public class PlayerScript : MonoBehaviour
             Invoke("Respawn", respawnTimer);
             GameObject.Find("Main Camera").GetComponent<CameraScript>().shakeDuration = .2f;
             Invoke("StopShake", .2f);
+            #endregion
         }
     }
     // Respawn function
     private void Respawn()
     {
+        #region Respawn Variables and Re-Initialization
         animator.SetBool("Idle", true);
         animator.SetBool("Stunned", false);
         dead = false;
@@ -835,11 +845,13 @@ public class PlayerScript : MonoBehaviour
             GameObject.Find("DeathTracker").GetComponent<DeathTrackerScript>().urialAlive = true;
         else if (this.gameObject.name == "Barachial")
             GameObject.Find("DeathTracker").GetComponent<DeathTrackerScript>().barachialAlive = true;
+        #endregion
     }
 
     //function called to unstun the player
     public void UnStun()
-    {
+    {     
+        #region Unstun Variables Re-Initialized
         animator.SetBool("Idle", true);
         animator.SetBool("Stunned", false);       
         stunned = false;
@@ -858,7 +870,8 @@ public class PlayerScript : MonoBehaviour
                 moveSpeed = 20;
             else
                 moveSpeed = 10;
-        }
+            #endregion
+      }
     }
 
     //co routinue to stop the melee
